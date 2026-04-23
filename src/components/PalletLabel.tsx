@@ -1,6 +1,7 @@
 import React from 'react';
 import Barcode from 'react-barcode';
 import { cn } from '../lib/utils';
+import { Grape } from 'lucide-react';
 
 interface PalletLabelProps {
   sku: string;
@@ -26,74 +27,102 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
       )}
       id={`label-${sku}`}
     >
+      {/* Winery Decorative Background Element */}
+      <div className="absolute -right-20 -top-20 opacity-[0.03] rotate-12 pointer-events-none">
+        <Grape size={400} />
+      </div>
+
       {/* Logos Header */}
-      <div className="flex justify-between items-start w-full p-12">
-        <div className="w-48 h-24 border border-stone-100 flex items-center justify-start p-4">
+      <div className="flex justify-between items-start w-full p-12 z-10">
+        <div className="w-72 h-36 border border-stone-100 flex items-center justify-start p-2 bg-white/50 backdrop-blur-sm">
           {leftLogo ? (
-            <img src={leftLogo} alt="Left Logo" className="max-w-full max-h-full object-contain" />
+            <img src={leftLogo} alt="Left Logo" className="max-w-[110%] max-h-[110%] object-contain" />
           ) : (
             <div className="text-[10px] uppercase font-bold tracking-widest text-stone-300">
-              Logo Izquierdo
+              Logo Bodega
             </div>
           )}
         </div>
         
         <div className="text-center pt-2">
-          <span className="text-[10px] uppercase tracking-[0.5em] text-stone-400 font-bold block mb-1">
-            CONTROL DE LOGÍSTICA
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Grape className="w-4 h-4 text-wine-deep" />
+            <span className="text-4xl font-belluccia text-stone-800 px-2">
+              Escorihuela Gascon
+            </span>
+            <Grape className="w-4 h-4 text-wine-deep" />
+          </div>
+          <div className="h-[1px] w-64 bg-stone-200 mx-auto mt-2" />
+          <span className="text-[10px] uppercase tracking-[0.3em] text-stone-400 font-bold block mt-2">
+            GESTIÓN DE BODEGA Y LOGÍSTICA
           </span>
-          <div className="h-[1px] w-24 bg-stone-200 mx-auto" />
         </div>
 
-        <div className="w-48 h-24 border border-stone-100 flex items-center justify-end p-4">
+        <div className="w-72 h-36 border border-stone-100 flex items-center justify-end p-2 bg-white/50 backdrop-blur-sm">
           {rightLogo ? (
-            <img src={rightLogo} alt="Right Logo" className="max-w-full max-h-full object-contain" />
+            <img src={rightLogo} alt="Right Logo" className="max-w-[110%] max-h-[110%] object-contain" />
           ) : (
             <div className="text-[10px] uppercase font-bold tracking-widest text-stone-300">
-              Logo Derecho
+              Operador Logístico
             </div>
           )}
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center px-12 border-y border-stone-100 mx-12">
+      <div className="flex-1 flex flex-col justify-center items-center text-center px-12 border-y border-stone-100 mx-12 z-10">
         <div className="space-y-4">
-          <span className="text-xs uppercase tracking-[0.3em] text-stone-400 font-bold italic">Product SKU</span>
+          <span className="text-sm uppercase tracking-[0.4em] text-stone-400 font-bold italic">CÓDIGO SKU</span>
           <h1 className="text-9xl font-mono font-black tracking-tighter text-stone-900 leading-none">
             {sku}
           </h1>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-stone-100 w-full max-w-4xl">
-          <h2 className="text-5xl font-serif italic text-stone-700 leading-tight">
+        <div className="mt-12 pt-10 border-t-2 border-stone-900/10 w-full max-w-5xl">
+          <h2 className="text-7xl font-serif font-bold text-black leading-[1.1] uppercase">
             {description}
           </h2>
+          <div className="mt-4 flex items-center justify-center gap-4">
+            <div className="h-[1px] w-12 bg-stone-300" />
+            <span className="text-xs font-serif italic text-stone-400 tracking-widest uppercase">Premium Product / Wine Estate</span>
+            <div className="h-[1px] w-12 bg-stone-300" />
+          </div>
         </div>
       </div>
 
       {/* Barcode Footer */}
-      <div className="flex flex-col justify-end items-center w-full pb-16 space-y-4">
-        <div className="scale-[1.8] transform origin-bottom grayscale opacity-90">
+      <div className="flex flex-col justify-end items-center w-full pb-14 space-y-4 z-10">
+        <div className="scale-[2] transform origin-bottom grayscale opacity-90 mb-2">
           <Barcode 
             value={sku} 
             width={2}
-            height={60}
+            height={40}
             fontSize={0}
             background="transparent"
             displayValue={false}
           />
         </div>
-        <span className="font-mono text-sm tracking-[0.8em] text-stone-400 uppercase">
-          (01){sku}(21){Math.floor(Math.random() * 10000)}
-        </span>
+        <div className="flex flex-col items-center">
+          <span className="font-mono text-base tracking-[1.2em] text-stone-500 font-bold translate-x-[0.6em]">
+            {sku}
+          </span>
+          <div className="flex items-center gap-6 mt-4">
+             <span className="text-[9px] font-bold text-stone-300 uppercase tracking-widest border-r border-stone-200 pr-6">
+               Vino Argentino - Bebida Nacional
+             </span>
+             <span className="text-[9px] font-bold text-stone-300 uppercase tracking-widest">
+               Size: A4 Landscape
+             </span>
+          </div>
+        </div>
       </div>
 
-      {/* Subtle Page Info for Editorial Feel */}
-      <div className="absolute bottom-4 left-8 text-[8px] font-mono text-stone-300 uppercase tracking-widest">
-        Pallet ID: {sku} / FORMAT: A4 LANDSCAPE / 300DPI
+      {/* Corner Accents (Subtle Winery Style) */}
+      <div className="absolute bottom-6 left-8 text-[9px] font-mono text-stone-400 uppercase tracking-[0.3em] font-bold">
+        Pallet ID: {Math.floor(Math.random() * 100000)} / BODEGA: {sku.split('-')[0] || 'ESTATE'}
       </div>
     </div>
   );
 };
+
 
