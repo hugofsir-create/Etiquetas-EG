@@ -84,7 +84,7 @@ export default function App() {
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 bg-brand-primary flex items-center justify-center text-white font-serif text-2xl italic rounded-xl shadow-lg shadow-indigo-200">E</div>
           <div className="flex flex-col">
-            <h1 className="text-stone-900 font-black tracking-tight text-lg leading-none">PalletDraft <span className="text-brand-accent">Designer</span></h1>
+            <h1 className="text-stone-900 font-black tracking-tight text-lg leading-none">Label <span className="text-brand-accent">EG</span></h1>
             <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-stone-400 mt-1">SISTEMA INTEGRADO DE ETIQUETADO</span>
           </div>
         </div>
