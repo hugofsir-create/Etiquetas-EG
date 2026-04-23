@@ -32,53 +32,56 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
         <Grape size={400} />
       </div>
 
-      {/* Logos Header */}
-      <div className="flex justify-between items-start w-full p-12 z-10">
-        <div className="w-72 h-36 border border-stone-100 flex items-center justify-start p-2 bg-white/50 backdrop-blur-sm">
-          {leftLogo ? (
-            <img src={leftLogo} alt="Left Logo" className="max-w-[110%] max-h-[110%] object-contain" />
-          ) : (
-            <div className="text-[10px] uppercase font-bold tracking-widest text-stone-300">
-              Logo Bodega
-            </div>
-          )}
-        </div>
-        
-        <div className="text-center pt-2">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <Grape className="w-4 h-4 text-wine-deep" />
-            <span className="text-4xl font-belluccia text-stone-800 px-2">
-              Escorihuela Gascon
-            </span>
-            <Grape className="w-4 h-4 text-wine-deep" />
-          </div>
-          <div className="h-[1px] w-64 bg-stone-200 mx-auto mt-2" />
-          <span className="text-[10px] uppercase tracking-[0.3em] text-stone-400 font-bold block mt-2">
-            GESTIÓN DE BODEGA Y LOGÍSTICA
+      {/* Header with Brand Name Only */}
+      <div className="w-full pt-12 text-center z-10">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <Grape className="w-5 h-5 text-wine-deep" />
+          <span className="text-5xl font-belluccia text-stone-800 px-2 transition-all">
+            Escorihuela Gascon
           </span>
+          <Grape className="w-5 h-5 text-wine-deep" />
         </div>
-
-        <div className="w-72 h-36 border border-stone-100 flex items-center justify-end p-2 bg-white/50 backdrop-blur-sm">
-          {rightLogo ? (
-            <img src={rightLogo} alt="Right Logo" className="max-w-[110%] max-h-[110%] object-contain" />
-          ) : (
-            <div className="text-[10px] uppercase font-bold tracking-widest text-stone-300">
-              Operador Logístico
-            </div>
-          )}
-        </div>
+        <div className="h-[2px] w-80 bg-wine-deep/10 mx-auto mt-3" />
+        <span className="text-[11px] uppercase tracking-[0.4em] text-stone-400 font-black block mt-3">
+          GESTIÓN DE BODEGA Y LOGÍSTICA
+        </span>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col justify-start items-center text-center px-12 border-y border-stone-100 mx-12 z-10 pt-8">
-        <div className="space-y-2 relative -top-[1.5cm]">
-          <span className="text-sm uppercase tracking-[0.4em] text-stone-400 font-bold italic">CÓDIGO SKU</span>
-          <h1 className="text-[17rem] font-mono font-black tracking-tighter text-black leading-none">
-            {sku}
-          </h1>
+      {/* Main Content Area with Side Logos */}
+      <div className="flex-1 flex flex-col justify-start items-center text-center px-8 border-y border-stone-100 mx-12 z-10 pt-4">
+        <div className="flex items-center justify-between w-full h-[20rem] relative -top-[1cm]">
+          {/* Left Logo */}
+          <div className="w-48 h-48 border border-stone-100 flex items-center justify-center p-2 bg-white/50 backdrop-blur-sm self-center">
+            {leftLogo ? (
+              <img src={leftLogo} alt="Left Logo" className="max-w-[110%] max-h-[110%] object-contain" />
+            ) : (
+              <div className="text-[10px] uppercase font-bold tracking-widest text-stone-300">
+                Logo Bodega
+              </div>
+            )}
+          </div>
+
+          {/* Center SKU */}
+          <div className="flex-1 flex flex-col items-center justify-center space-y-2">
+            <span className="text-sm uppercase tracking-[0.4em] text-stone-400 font-bold italic">CÓDIGO SKU</span>
+            <h1 className="text-[17rem] font-arial-black font-black tracking-tighter text-black leading-none uppercase">
+              {sku}
+            </h1>
+          </div>
+
+          {/* Right Logo */}
+          <div className="w-48 h-48 border border-stone-100 flex items-center justify-center p-2 bg-white/50 backdrop-blur-sm self-center">
+            {rightLogo ? (
+              <img src={rightLogo} alt="Right Logo" className="max-w-[110%] max-h-[110%] object-contain" />
+            ) : (
+              <div className="text-[10px] uppercase font-bold tracking-widest text-stone-300">
+                Operador Logístico
+              </div>
+            )}
+          </div>
         </div>
         
-        <div className="mt-4 pt-4 border-t-2 border-stone-900/10 w-full max-w-5xl">
+        <div className="mt-2 pt-2 border-t-2 border-stone-900/10 w-full max-w-5xl">
           <h2 className="text-7xl font-serif font-bold text-black leading-[1.1] uppercase">
             {description}
           </h2>
