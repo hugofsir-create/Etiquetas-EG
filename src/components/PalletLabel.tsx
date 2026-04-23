@@ -35,17 +35,17 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
 
       {/* Winery Decorative Background Element */}
       <div className="absolute -right-20 -top-20 opacity-[0.03] rotate-12 pointer-events-none">
-        <Grape size={400} />
+        <Grape size={800} />
       </div>
 
       {/* Header with Brand Name Only */}
       <div className="w-full pt-12 text-center z-10">
         <div className="flex items-center justify-center gap-2 mb-1">
-          <Grape className="w-5 h-5 text-wine-deep" />
+          <Grape className="w-10 h-10 text-wine-deep" />
           <span className="text-5xl font-belluccia text-stone-800 px-2 transition-all">
             Escorihuela Gascon
           </span>
-          <Grape className="w-5 h-5 text-wine-deep" />
+          <Grape className="w-10 h-10 text-wine-deep" />
         </div>
         <div className="h-[2px] w-80 bg-wine-deep/10 mx-auto mt-3" />
         <span className="text-[11px] uppercase tracking-[0.4em] text-stone-400 font-black block mt-3">
