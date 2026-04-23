@@ -338,9 +338,31 @@ export default function App() {
       <style>{`
         @media print {
           @page { size: A4 landscape; margin: 0; }
-          body { background: white !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; }
-          main { padding: 0 !important; margin: 0 !important; background: white !important; display: block !important; position: static !important; overflow: visible !important; }
-          .label-container { width: 297mm !important; height: 210mm !important; margin: 0 !important; border: none !important; page-break-after: always; box-shadow: none !important; display: flex !important; }
+          html, body, #root, [class*="h-screen"], [class*="overflow-hidden"] { 
+            height: auto !important; 
+            overflow: visible !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+          }
+          main { 
+            padding: 0 !important; 
+            margin: 0 !important; 
+            background: white !important; 
+            display: block !important; 
+            position: static !important; 
+            overflow: visible !important; 
+            height: auto !important;
+          }
+          .label-container { 
+            width: 297mm !important; 
+            height: 210mm !important; 
+            margin: 0 !important; 
+            border: none !important; 
+            page-break-after: always !important; 
+            break-after: page !important;
+            box-shadow: none !important; 
+            display: flex !important; 
+          }
           header, nav, aside, .print:hidden { display: none !important; }
         }
       `}</style>
