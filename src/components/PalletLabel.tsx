@@ -27,6 +27,12 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
       )}
       id={`label-${sku}`}
     >
+      {/* Corner Brackets for Robust Look */}
+      <div className="absolute top-0 left-0 w-16 h-16 border-t-8 border-l-8 border-black z-20" />
+      <div className="absolute top-0 right-0 w-16 h-16 border-t-8 border-r-8 border-black z-20" />
+      <div className="absolute bottom-0 left-0 w-16 h-16 border-b-8 border-l-8 border-black z-20" />
+      <div className="absolute bottom-0 right-0 w-16 h-16 border-b-8 border-r-8 border-black z-20" />
+
       {/* Winery Decorative Background Element */}
       <div className="absolute -right-20 -top-20 opacity-[0.03] rotate-12 pointer-events-none">
         <Grape size={400} />
@@ -81,14 +87,21 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
         </div>
         
-        <div className="mt-2 pt-2 border-t-2 border-stone-900/10 w-full max-w-5xl">
-          <h2 className="text-7xl font-serif font-bold text-black leading-[1.1] uppercase">
+        <div className="mt-2 w-full max-w-5xl">
+          {/* Robust Double Divider */}
+          <div className="flex flex-col gap-1 mb-8">
+            <div className="h-[4px] w-full bg-black" />
+            <div className="h-[1px] w-full bg-black/20" />
+          </div>
+
+          <h2 className="text-7xl font-serif font-black text-black leading-[1.1] uppercase tracking-tight">
             {description}
           </h2>
-          <div className="mt-4 flex items-center justify-center gap-4">
-            <div className="h-[1px] w-12 bg-stone-300" />
-            <span className="text-xs font-serif italic text-stone-400 tracking-widest uppercase">Premium Product / Wine Estate</span>
-            <div className="h-[1px] w-12 bg-stone-300" />
+          
+          <div className="mt-8 flex items-center justify-center gap-6">
+            <div className="h-[2px] flex-1 bg-black/10" />
+            <span className="text-sm font-serif italic text-stone-500 tracking-[0.3em] uppercase font-bold">Premium Logistics / Wine Estate Authority</span>
+            <div className="h-[2px] flex-1 bg-black/10" />
           </div>
         </div>
       </div>
