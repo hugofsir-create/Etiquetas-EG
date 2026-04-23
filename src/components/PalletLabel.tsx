@@ -71,7 +71,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col justify-start items-center text-center px-12 border-y border-stone-100 mx-12 z-10 pt-8">
-        <div className="space-y-2">
+        <div className="space-y-2 relative -top-[1.5cm]">
           <span className="text-sm uppercase tracking-[0.4em] text-stone-400 font-bold italic">CÓDIGO SKU</span>
           <h1 className="text-[17rem] font-mono font-black tracking-tighter text-black leading-none">
             {sku}
