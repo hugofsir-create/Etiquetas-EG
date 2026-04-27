@@ -24,6 +24,7 @@ interface LabelData {
   sku: string;
   description: string;
   boxes?: string | number;
+  quantity?: number;
   totalQuantity?: number;
   palletCount?: number;
 }

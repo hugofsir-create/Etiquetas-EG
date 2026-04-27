@@ -44,7 +44,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
       </div>
 
       {/* Header with Brand Name Only */}
-      <div className="w-full pt-8 text-center z-10">
+      <div className="w-full pt-8 text-center z-10 flex flex-col items-center justify-center">
         <div className="flex items-center justify-center gap-6 mb-2">
           <div className="h-[2px] w-24 bg-black" />
           <Grape className="w-12 h-12 text-black" />
@@ -54,17 +54,17 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           <Grape className="w-12 h-12 text-black" />
           <div className="h-[2px] w-24 bg-black" />
         </div>
-        <div className="h-[1px] w-[600px] bg-black/10 mx-auto mt-4" />
-        <span className="text-[12px] uppercase tracking-[0.5em] text-black font-black block mt-4 bg-white px-8 mx-auto inline-block relative z-10">
+        <div className="h-[1px] w-[600px] bg-black/10 mt-4" />
+        <span className="text-[12px] uppercase tracking-[0.5em] text-black font-black block mt-4 bg-white px-8 relative z-10">
           SISTEMA DE GESTIÓN VINÍCOLA Y LOGÍSTICA DE PRECISIÓN
         </span>
       </div>
 
       {/* Main Content Area with Side Logos */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center px-8 border-y-[4px] border-black/5 mx-12 z-10 py-8 my-4">
-        <div className="flex items-center justify-between w-full gap-4">
+      <div className="flex-1 flex flex-col justify-center items-center text-center w-full px-[50mm] border-y-[4px] border-black/5 z-10 py-8 my-4 relative">
+        <div className="flex items-center justify-center w-full gap-8 relative">
           {/* Left Logo Container */}
-          <div className="w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
+          <div className="absolute left-[-40mm] top-1/2 -translate-y-1/2 w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
             {leftLogo ? (
               <img src={leftLogo} alt="Left Logo" className="max-w-full max-h-full object-contain" />
             ) : (
@@ -75,14 +75,14 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
 
           {/* Center SKU */}
-          <div className="flex-1 flex flex-col items-center justify-center min-w-0 px-4">
+          <div className="flex flex-col items-center justify-center min-w-0 px-4">
             <div className="flex items-center gap-4 mb-2">
                <div className="h-[1px] w-8 bg-black/30" />
                <span className="text-sm uppercase tracking-[0.5em] text-black font-black italic">ID ARTÍCULO SKU</span>
                <div className="h-[1px] w-8 bg-black/30" />
             </div>
             <h1 
-              className="font-arial-black font-black tracking-[-0.05em] text-black leading-[1] uppercase flex items-center justify-center text-center w-full whitespace-nowrap text-[10rem]"
+              className="font-arial-black font-black tracking-[-0.05em] text-black leading-[1] uppercase flex items-center justify-center text-center whitespace-nowrap text-[10rem]"
             >
               {sku}
             </h1>
@@ -98,7 +98,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
 
           {/* Right Logo Container */}
-          <div className="w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
+          <div className="absolute right-[-40mm] top-1/2 -translate-y-1/2 w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
             {rightLogo ? (
               <img src={rightLogo} alt="Right Logo" className="max-w-full max-h-full object-contain" />
             ) : (
@@ -109,20 +109,20 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
         </div>
         
-        <div className="mt-8 w-full max-w-6xl px-12">
+        <div className="mt-8 w-full max-w-6xl">
           {/* Robust Triple Divider */}
           <div className="flex flex-col gap-1.5 mb-6">
-            <div className="h-[6px] w-full bg-black" />
-            <div className="h-[2px] w-full bg-black/40" />
+            <div className="h-[6px] w-[80%] mx-auto bg-black" />
+            <div className="h-[2px] w-[80%] mx-auto bg-black/40" />
           </div>
 
           <h2 
-            className="font-serif font-black text-black leading-[1.1] uppercase tracking-tight text-center break-words text-[4rem]"
+            className="font-serif font-black text-black leading-[1.1] uppercase tracking-tight text-center break-words text-[4rem] px-12"
           >
             {description}
           </h2>
           
-          <div className="mt-8 flex items-center justify-center gap-8">
+          <div className="mt-8 flex items-center justify-center gap-8 px-12">
             <div className="h-[3px] flex-1 bg-black" />
             <div className="flex flex-col items-center">
               <span className="text-[11px] font-black text-black uppercase tracking-[0.4em]">ORIGEN: LUJÁN DE CUYO, MENDOZA</span>
