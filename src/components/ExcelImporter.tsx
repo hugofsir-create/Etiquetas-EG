@@ -6,6 +6,7 @@ import { cn } from '../lib/utils';
 interface LabelData {
   sku: string;
   description: string;
+  boxes?: string | number;
 }
 
 interface ExcelImporterProps {
@@ -43,10 +44,12 @@ export const ExcelImporter: React.FC<ExcelImporterProps> = ({
           const keys = Object.keys(row);
           const skuKey = keys.find(k => k.toLowerCase().includes('sku') || k.toLowerCase().includes('codigo'));
           const descKey = keys.find(k => k.toLowerCase().includes('desc') || k.toLowerCase().includes('nombre') || k.toLowerCase().includes('articulo'));
+          const boxesKey = keys.find(k => k.toLowerCase().includes('caja') || k.toLowerCase().includes('pallet') || k.toLowerCase().includes('box'));
           
           return {
             sku: skuKey ? String(row[skuKey]) : 'N/A',
             description: descKey ? String(row[descKey]) : 'SIN DESCRIPCIÓN',
+            boxes: boxesKey ? row[boxesKey] : undefined,
           };
         });
 
@@ -77,9 +80,9 @@ export const ExcelImporter: React.FC<ExcelImporterProps> = ({
     <div className={cn("w-full mx-auto", className)}>
       <div
         className={cn(
-          "relative group border border-stone-200 rounded-none p-8 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer",
-          isHovering ? "border-brand-primary bg-indigo-50/30" : "bg-white hover:border-brand-primary/30",
-          error ? "border-red-200 bg-red-50" : ""
+          "relative group border border-zinc-800 rounded-lg p-8 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden",
+          isHovering ? "border-brand-primary bg-brand-primary/5" : "bg-zinc-900 hover:border-zinc-700",
+          error ? "border-red-900 bg-red-950/20" : ""
         )}
         onDragOver={(e) => { e.preventDefault(); setIsHovering(true); }}
         onDragLeave={() => setIsHovering(false)}
@@ -94,17 +97,18 @@ export const ExcelImporter: React.FC<ExcelImporterProps> = ({
           onChange={handleFileChange}
         />
         
-        <div className="mb-4">
-          <FileSpreadsheet className="w-8 h-8 text-brand-primary stroke-[1.5px]" />
+        <div className="mb-4 relative">
+          <div className="absolute inset-0 bg-brand-primary blur-xl opacity-20" />
+          <FileSpreadsheet className="w-8 h-8 text-brand-primary stroke-[1.5px] relative" />
         </div>
 
-        <h3 className="text-sm font-bold mb-1 text-stone-800 uppercase tracking-tight">{title}</h3>
-        <p className="text-stone-400 text-[10px] mb-6 font-medium max-w-[200px]">
+        <h3 className="text-sm font-bold mb-1 text-zinc-100 uppercase tracking-tight">{title}</h3>
+        <p className="text-zinc-500 text-[10px] mb-6 font-medium max-w-[200px]">
           {description}
         </p>
 
         <div className="flex gap-2">
-          <button className="px-6 py-2 bg-brand-primary text-white text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-900 transition-colors shadow-sm">
+          <button className="px-6 py-2 bg-brand-primary text-black text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all shadow-lg shadow-brand-primary/10">
             Elegir Archivo
           </button>
         </div>

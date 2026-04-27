@@ -22,26 +22,92 @@ import { cn } from './lib/utils';
 interface LabelData {
   sku: string;
   description: string;
+  boxes?: string | number;
 }
 
+interface MaterialInfo {
+  description: string;
+  boxes?: string | number;
+}
+
+interface Client {
+  id: string;
+  name: string;
+  materialMaster: Record<string, MaterialInfo>;
+  leftLogo: string | null;
+  rightLogo: string | null;
+}
+
+const DEFAULT_CLIENTS: Client[] = [
+  {
+    id: 'eg',
+    name: 'Escorihuela Gascon',
+    materialMaster: {},
+    leftLogo: null,
+    rightLogo: null
+  },
+  {
+    id: 'rutini',
+    name: 'Rutini wines',
+    materialMaster: {},
+    leftLogo: null,
+    rightLogo: null
+  }
+];
+
 export default function App() {
-  // State with LocalStorage persistence
-  const [materialMaster, setMaterialMaster] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('materialMaster');
-    return saved ? JSON.parse(saved) : {};
+  // Multi-client State
+  const [clients, setClients] = useState<Client[]>(() => {
+    const saved = localStorage.getItem('clients_data');
+    let data: Client[] = saved ? JSON.parse(saved) : DEFAULT_CLIENTS;
+    // Migration: Update Zuccardi to Rutini wines and fix materialMaster structure
+    data = data.map(c => {
+      let updatedClient = { ...c };
+      if (c.id === 'zuccardi' || c.name === 'Zuccardi') {
+        updatedClient = { ...updatedClient, id: 'rutini', name: 'Rutini wines' };
+      }
+      
+      // Migrate materialMaster from Record<string, string> to Record<string, MaterialInfo>
+      const newMaster: Record<string, MaterialInfo> = {};
+      Object.entries(updatedClient.materialMaster).forEach(([sku, value]) => {
+        if (typeof value === 'string') {
+          newMaster[sku] = { description: value };
+        } else {
+          newMaster[sku] = value;
+        }
+      });
+      updatedClient.materialMaster = newMaster;
+      return updatedClient;
+    });
+    return data;
   });
   
-  const [leftLogo, setLeftLogo] = useState<string | null>(() => localStorage.getItem('leftLogo'));
-  const [rightLogo, setRightLogo] = useState<string | null>(() => localStorage.getItem('rightLogo'));
-  
+  const [activeClientId, setActiveClientId] = useState<string>(() => {
+    let id = localStorage.getItem('active_client_id') || 'eg';
+    if (id === 'zuccardi') id = 'rutini';
+    return id;
+  });
+
+  const activeClient = clients.find(c => c.id === activeClientId) || clients[0];
+
   const [printQueue, setPrintQueue] = useState<LabelData[]>([]);
   const [selectedTab, setSelectedTab] = useState<'master' | 'print' | 'config'>('master');
   const [skuInput, setSkuInput] = useState('');
 
-  // Persist settings
-  useEffect(() => localStorage.setItem('materialMaster', JSON.stringify(materialMaster)), [materialMaster]);
-  useEffect(() => { if (leftLogo) localStorage.setItem('leftLogo', leftLogo) }, [leftLogo]);
-  useEffect(() => { if (rightLogo) localStorage.setItem('rightLogo', rightLogo) }, [rightLogo]);
+  // Persistence
+  useEffect(() => {
+    localStorage.setItem('clients_data', JSON.stringify(clients));
+  }, [clients]);
+
+  useEffect(() => {
+    localStorage.setItem('active_client_id', activeClientId);
+  }, [activeClientId]);
+
+  const updateActiveClient = (updates: Partial<Client>) => {
+    setClients(prev => prev.map(c => 
+      c.id === activeClientId ? { ...c, ...updates } : c
+    ));
+  };
 
   const handleLogoUpload = (side: 'left' | 'right', e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,28 +115,34 @@ export default function App() {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        if (side === 'left') setLeftLogo(result);
-        else setRightLogo(result);
+        if (side === 'left') updateActiveClient({ leftLogo: result });
+        else updateActiveClient({ rightLogo: result });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleMasterImport = (data: LabelData[]) => {
-    const newMaster = { ...materialMaster };
+    const newMaster = { ...activeClient.materialMaster };
     data.forEach(item => {
-      newMaster[item.sku.trim().toUpperCase()] = item.description;
+      newMaster[item.sku.trim().toUpperCase()] = {
+        description: item.description,
+        boxes: item.boxes
+      };
     });
-    setMaterialMaster(newMaster);
-    setSelectedTab('print');
+    updateActiveClient({ materialMaster: newMaster });
   };
 
   const addToQueue = (skusInput: string) => {
     const lines = skusInput.split(/[\n,;]/).map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-    const newItems: LabelData[] = lines.map(sku => ({
-      sku,
-      description: materialMaster[sku] || 'SKU NO ENCONTRADO EN MAESTRO'
-    }));
+    const newItems: LabelData[] = lines.map(sku => {
+      const info = activeClient.materialMaster[sku];
+      return {
+        sku,
+        description: info?.description || 'SKU NO ENCONTRADO EN MAESTRO',
+        boxes: info?.boxes
+      };
+    });
     setPrintQueue([...printQueue, ...newItems]);
     setSkuInput('');
   };
@@ -78,14 +150,43 @@ export default function App() {
   const handlePrint = () => window.print();
 
   return (
-    <div className="flex flex-col h-screen bg-stone-100 font-sans overflow-hidden selection:bg-brand-primary selection:text-white">
-      {/* Header - Vibrant Brand Colors */}
-      <header className="h-16 bg-white border-b border-indigo-100 flex items-center justify-between px-8 z-10 shrink-0 print:hidden shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-brand-primary flex items-center justify-center text-white font-serif text-2xl italic rounded-xl shadow-lg shadow-indigo-200">E</div>
-          <div className="flex flex-col">
-            <h1 className="text-stone-900 font-black tracking-tight text-lg leading-none">Label <span className="text-brand-accent">EG</span></h1>
-            <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-stone-400 mt-1">SISTEMA INTEGRADO DE ETIQUETADO</span>
+    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 font-sans overflow-hidden selection:bg-brand-primary selection:text-white">
+      {/* Header - Dark Sleek */}
+      <header className="h-16 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-8 z-20 shrink-0 print:hidden shadow-xl">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-brand-primary flex items-center justify-center text-white font-serif text-2xl italic rounded-xl shadow-lg shadow-indigo-900/40">
+              {activeClient.name.charAt(0)}
+            </div>
+            <div className="flex flex-col">
+              <h1 className="text-white font-black tracking-tight text-lg leading-none">
+                Label <span className="text-brand-accent">Hub</span>
+              </h1>
+              <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-zinc-500 mt-1">CLIENTE: {activeClient.name}</span>
+            </div>
+          </div>
+
+          <div className="h-8 w-[1px] bg-zinc-800" />
+
+          {/* Client Switcher */}
+          <div className="flex items-center gap-2 bg-zinc-950 p-1 rounded-lg border border-zinc-800">
+            {clients.map(client => (
+              <button
+                key={client.id}
+                onClick={() => {
+                  setActiveClientId(client.id);
+                  setPrintQueue([]);
+                }}
+                className={cn(
+                  "px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all",
+                  activeClientId === client.id 
+                    ? "bg-zinc-800 text-brand-accent shadow-sm" 
+                    : "text-zinc-500 hover:text-zinc-300"
+                )}
+              >
+                {client.name}
+              </button>
+            ))}
           </div>
         </div>
         
@@ -110,14 +211,14 @@ export default function App() {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Navigation Sidebar */}
-        <nav className="w-20 bg-stone-900 flex flex-col items-center py-8 gap-8 shrink-0 print:hidden">
+        <nav className="w-20 bg-zinc-950 border-r border-zinc-900 flex flex-col items-center py-8 gap-8 shrink-0 print:hidden">
           <NavItem icon={<Database />} active={selectedTab === 'master'} onClick={() => setSelectedTab('master')} label="Maestro" />
           <NavItem icon={<LayoutList />} active={selectedTab === 'print'} onClick={() => setSelectedTab('print')} label="Imprimir" />
           <NavItem icon={<Settings />} active={selectedTab === 'config'} onClick={() => setSelectedTab('config')} label="Config" />
           
           <button 
             onClick={() => { if(confirm('¿Reiniciar App?')) { localStorage.clear(); window.location.reload(); } }}
-            className="mt-auto p-4 text-stone-600 hover:text-red-400 transition-colors"
+            className="mt-auto p-4 text-zinc-700 hover:text-red-500 transition-colors"
             title="Borrar Todo"
           >
             <RotateCcw className="w-5 h-5" />
@@ -125,79 +226,73 @@ export default function App() {
         </nav>
 
         {/* Controls Panel */}
-        <aside className="w-[340px] bg-white border-r border-stone-200 p-8 flex flex-col gap-8 overflow-y-auto shrink-0 print:hidden">
+        <aside className="w-[340px] bg-zinc-900 border-r border-zinc-800 p-8 flex flex-col gap-8 overflow-y-auto shrink-0 print:hidden">
           <AnimatePresence mode="wait">
             {selectedTab === 'master' && (
               <motion.div key="master" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-6">
                 <div className="space-y-1">
-                  <h2 className="text-xs uppercase tracking-widest text-brand-primary font-black">Maestro de Materiales</h2>
-                  <p className="text-[10px] text-stone-400 font-medium">Base de datos SKU + Descripción</p>
+                  <h2 className="text-xs uppercase tracking-widest text-brand-primary font-black">Maestro Materiales</h2>
+                  <p className="text-[10px] text-zinc-500 font-medium">Base de datos SKU + Descripción</p>
                 </div>
                 
                 <ExcelImporter 
                   onDataLoaded={handleMasterImport} 
                   title="Importar Catálogo"
-                  description="Carga tu base de datos completa aquí (.xlsx)"
+                  description="Carga tu base de datos (.xlsx)"
+                  className="bg-zinc-800 border-zinc-700"
                 />
 
-                <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-lg">
+                <div className="bg-brand-primary/5 border border-brand-primary/20 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-indigo-900">Estado</span>
-                    <span className="text-xs font-mono font-bold text-brand-primary">{Object.keys(materialMaster).length} registrados</span>
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-brand-primary">Estado</span>
+                    <span className="text-xs font-mono font-bold text-white">{Object.keys(activeClient.materialMaster).length} registrados</span>
                   </div>
-                  <p className="text-[9px] text-indigo-400 leading-tight">
-                    El maestro se guarda automáticamente. Puedes sobrescribirlo cargando un nuevo archivo.
+                  <p className="text-[9px] text-zinc-500 leading-tight">
+                    El maestro se guarda automáticamente para {activeClient.name}.
                   </p>
                 </div>
 
-                {Object.keys(materialMaster).length > 0 && (
+                {Object.keys(activeClient.materialMaster).length > 0 && (
                   <div className="space-y-3">
                     <button 
                       onClick={() => {
-                        const allLabels = Object.entries(materialMaster).map(([sku, description]) => ({ sku, description }));
+                        const allLabels = Object.entries(activeClient.materialMaster).map(([sku, description]) => ({ sku, description }));
                         setPrintQueue([...printQueue, ...allLabels]);
                         setSelectedTab('print');
                       }}
-                      className="w-full py-3 bg-white border-2 border-brand-primary text-brand-primary text-[10px] font-bold uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-zinc-800 border-2 border-zinc-700 text-zinc-300 text-[10px] font-bold uppercase tracking-widest hover:border-brand-primary hover:text-white transition-all flex items-center justify-center gap-2"
                     >
                       <Download className="w-3 h-3" />
                       Cargar Todo al Pedido
                     </button>
                     
-                    <div className="max-h-64 overflow-y-auto border border-stone-100 rounded-lg">
+                    <div className="max-h-64 overflow-y-auto border border-zinc-800 rounded-lg">
                       <table className="w-full text-left">
-                        <thead className="bg-stone-50 sticky top-0">
+                        <thead className="bg-zinc-950 sticky top-0">
                           <tr>
-                            <th className="text-[8px] uppercase tracking-widest p-2 font-black text-stone-400">SKU</th>
-                            <th className="text-[8px] uppercase tracking-widest p-2 font-black text-stone-400">Acción</th>
+                            <th className="text-[8px] uppercase tracking-widest p-2 font-black text-zinc-600">SKU</th>
+                            <th className="text-[8px] uppercase tracking-widest p-2 font-black text-zinc-600">Acción</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-stone-50">
-                          {Object.entries(materialMaster).slice(0, 50).map(([sku, desc]) => (
-                            <tr key={sku} className="hover:bg-indigo-50/30 transition-colors group">
+                        <tbody className="divide-y divide-zinc-800">
+                          {Object.entries(activeClient.materialMaster).slice(0, 50).map(([sku, info]) => (
+                            <tr key={sku} className="hover:bg-zinc-800/50 transition-colors group">
                               <td className="p-2">
                                 <div className="flex flex-col">
-                                  <span className="text-[10px] font-mono font-bold text-stone-700">{sku}</span>
-                                  <span className="text-[8px] text-stone-400 truncate w-32">{desc}</span>
+                                  <span className="text-[10px] font-mono font-bold text-zinc-300">{sku}</span>
+                                  <span className="text-[8px] text-zinc-500 truncate w-32">{info.description}</span>
                                 </div>
                               </td>
                               <td className="p-2">
                                 <button 
                                   onClick={() => addToQueue(sku)}
-                                  className="p-1.5 text-brand-primary hover:bg-brand-primary hover:text-white rounded transition-all"
+                                  className="p-1.5 text-brand-accent hover:bg-brand-accent hover:text-black rounded transition-all"
                                 >
                                   <Plus className="w-3 h-3" />
                                 </button>
                               </td>
                             </tr>
                           ))}
-                          {Object.keys(materialMaster).length > 50 && (
-                            <tr>
-                              <td colSpan={2} className="p-2 text-center text-[8px] text-stone-400 italic">
-                                + {Object.keys(materialMaster).length - 50} más...
-                              </td>
-                            </tr>
-                          )}
                         </tbody>
                       </table>
                     </div>
@@ -210,35 +305,36 @@ export default function App() {
               <motion.div key="print" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-6">
                 <div className="space-y-1">
                   <h2 className="text-xs uppercase tracking-widest text-brand-primary font-black">Orden de Impresión</h2>
-                  <p className="text-[10px] text-stone-400 font-medium">Carga masiva por SKU</p>
+                  <p className="text-[10px] text-zinc-500 font-medium">Carga masiva por SKU</p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-stone-500">Pegar lista de SKUs</label>
+                    <label className="text-[9px] uppercase tracking-widest font-bold text-zinc-500">Pegar lista de SKUs</label>
                     <textarea 
                       value={skuInput}
                       onChange={(e) => setSkuInput(e.target.value)}
-                      placeholder="SKU-100&#10;SKU-202&#10;SKU-305"
-                      className="w-full h-40 bg-stone-50 border border-stone-200 p-4 font-mono text-xs focus:border-brand-primary outline-none transition-all placeholder:text-stone-300"
+                      placeholder="SKU-100&#10;SKU-202"
+                      className="w-full h-40 bg-zinc-950 border border-zinc-800 p-4 font-mono text-xs text-brand-accent focus:border-brand-primary outline-none transition-all placeholder:text-zinc-800"
                     />
                   </div>
                   
                   <button 
                     onClick={() => addToQueue(skuInput)}
                     disabled={skuInput.length === 0}
-                    className="w-full py-4 bg-brand-primary text-white text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-900 transition-colors disabled:opacity-20 flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-brand-primary text-black text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-10 flex items-center justify-center gap-2"
                   >
                     <Plus className="w-3 h-3" />
-                    Añadir a Fila de Impresión
+                    Añadir a Fila
                   </button>
                   
-                  <div className="pt-4 border-t border-stone-100 flex flex-col gap-3">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-stone-500">O importar archivo de pedido</label>
+                  <div className="pt-4 border-t border-zinc-800 flex flex-col gap-3">
+                    <label className="text-[9px] uppercase tracking-widest font-bold text-zinc-500">O importar archivo</label>
                     <ExcelImporter 
                       onDataLoaded={(data) => setPrintQueue([...printQueue, ...data])}
                       title="Importar Pedido"
                       description="Solo SKUs deseados."
+                      className="bg-zinc-800 border-zinc-700"
                     />
                   </div>
                 </div>
@@ -246,15 +342,15 @@ export default function App() {
                 {printQueue.length > 0 && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-[9px] uppercase tracking-widest font-black text-stone-400">Contenido de la Fila</h3>
+                      <h3 className="text-[9px] uppercase tracking-widest font-black text-zinc-600">Contenido de la Fila</h3>
                       <button onClick={() => setPrintQueue([])} className="text-[8px] text-red-500 font-bold uppercase hover:underline">Limpiar Todo</button>
                     </div>
-                    <div className="max-h-60 overflow-y-auto border border-stone-100 rounded-lg divide-y divide-stone-50 bg-stone-50/20">
+                    <div className="max-h-60 overflow-y-auto border border-zinc-800 rounded-lg divide-y divide-zinc-800 bg-zinc-950">
                       {printQueue.map((item, index) => (
-                        <div key={index} className="p-3 flex items-center justify-between group hover:bg-white transition-colors">
+                        <div key={index} className="p-3 flex items-center justify-between group hover:bg-zinc-900 transition-colors">
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-mono font-bold text-stone-700">{item.sku}</span>
-                            <span className="text-[8px] text-stone-400 truncate w-32">{item.description}</span>
+                            <span className="text-[10px] font-mono font-bold text-zinc-300">{item.sku}</span>
+                            <span className="text-[8px] text-zinc-500 truncate w-32">{item.description}</span>
                           </div>
                           <button 
                             onClick={() => {
@@ -262,7 +358,7 @@ export default function App() {
                               newQueue.splice(index, 1);
                               setPrintQueue(newQueue);
                             }}
-                            className="p-1 hover:text-red-500 text-stone-300 transition-colors"
+                            className="p-1 hover:text-red-500 text-zinc-700 transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -276,12 +372,12 @@ export default function App() {
 
             {selectedTab === 'config' && (
               <motion.div key="config" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-8">
-                <h2 className="text-xs uppercase tracking-widest text-brand-primary font-black">Activos y Logos</h2>
+                <h2 className="text-xs uppercase tracking-widest text-brand-primary font-black">Activos y Logos - {activeClient.name}</h2>
                 {['left', 'right'].map((side) => (
                   <LogoUploader 
                     key={side}
                     side={side as 'left' | 'right'}
-                    logo={side === 'left' ? leftLogo : rightLogo}
+                    logo={side === 'left' ? activeClient.leftLogo : activeClient.rightLogo}
                     onUpload={handleLogoUpload}
                   />
                 ))}
@@ -291,17 +387,84 @@ export default function App() {
         </aside>
 
         {/* Main Stage */}
-        <main className="flex-1 bg-stone-200 relative overflow-y-auto p-12 flex flex-col items-center print:p-0 print:bg-white selection:bg-brand-primary/20">
+        <main className="flex-1 bg-zinc-950 relative overflow-y-auto p-12 flex flex-col items-center print:p-0 print:bg-white selection:bg-brand-primary/20">
           <AnimatePresence mode="wait">
-            {printQueue.length === 0 ? (
-              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center grayscale opacity-30">
-                <div className="w-[800px] h-[565px] bg-white shadow-2xl flex flex-col items-center justify-center gap-6 border-2 border-dashed border-stone-300">
-                  <div className="w-20 h-20 bg-stone-50 rounded-3xl flex items-center justify-center">
-                    <Printer className="w-10 h-10 text-stone-400" />
+            {selectedTab === 'master' ? (
+              <motion.div key="master-grid" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="w-full max-w-6xl">
+                <div className="mb-8 flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tighter">Maestro de Materiales</h2>
+                    <p className="text-sm text-zinc-500 font-medium">Visualización completa de la base de datos de {activeClient.name}</p>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-800 px-6 py-3 rounded-xl flex items-center gap-4">
+                    <Database className="w-5 h-5 text-brand-accent" />
+                    <span className="text-lg font-mono font-bold text-white">{Object.keys(activeClient.materialMaster).length} <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Items</span></span>
+                  </div>
+                </div>
+
+                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="bg-zinc-950 border-b border-zinc-800">
+                        <th className="p-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-left w-1/4">SKU / Código</th>
+                        <th className="p-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-left w-1/2">Descripción de Producto</th>
+                        <th className="p-5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 text-center w-1/4">Cajas por Pallet</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-800">
+                      {Object.keys(activeClient.materialMaster).length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="p-20 text-center">
+                             <div className="flex flex-col items-center gap-4 grayscale opacity-30">
+                               <LayoutList size={48} className="text-zinc-600" />
+                               <p className="text-[10px] uppercase font-black tracking-widest text-zinc-500">No hay datos cargados en el maestro</p>
+                             </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        Object.entries(activeClient.materialMaster).map(([sku, info]) => (
+                          <tr key={sku} className="hover:bg-zinc-800/40 transition-colors group">
+                            <td className="p-5 font-mono text-sm font-bold text-brand-accent uppercase tracking-tight">{sku}</td>
+                            <td className="p-5 text-sm font-bold text-zinc-300 uppercase tracking-tight leading-relaxed">{info.description}</td>
+                            <td className="p-5 text-center">
+                               <span className="inline-block px-4 py-1.5 bg-zinc-950 border border-zinc-800 text-white rounded-full font-mono text-sm font-black shadow-inner">
+                                 {info.boxes || '—'}
+                               </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            ) : selectedTab === 'config' ? (
+              <motion.div key="config-stage" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-4xl flex flex-col items-center justify-center min-h-full gap-12">
+                 <div className="text-center space-y-4">
+                   <Settings size={64} className="mx-auto text-brand-primary" />
+                   <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Configuración del Cliente</h2>
+                   <p className="text-zinc-500 text-sm max-w-md mx-auto">Ajusta los parámetros visuales y logísticos específicos para {activeClient.name}</p>
+                 </div>
+                 
+                 <div className="grid grid-cols-2 gap-8 w-full">
+                    {['left', 'right'].map((side) => (
+                      <LogoUploader 
+                        key={side}
+                        side={side as 'left' | 'right'}
+                        logo={side === 'left' ? activeClient.leftLogo : activeClient.rightLogo}
+                        onUpload={handleLogoUpload}
+                      />
+                    ))}
+                 </div>
+              </motion.div>
+            ) : printQueue.length === 0 ? (
+              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center grayscale opacity-10">
+                <div className="w-[800px] h-[565px] bg-black shadow-2xl flex flex-col items-center justify-center gap-6 border-2 border-dashed border-zinc-800">
+                  <div className="w-20 h-20 bg-zinc-900 rounded-3xl flex items-center justify-center">
+                    <Printer className="w-10 h-10 text-zinc-700" />
                   </div>
                   <div className="text-center space-y-2">
-                    <p className="font-serif italic text-2xl text-stone-400">Sin etiquetas en cola</p>
-                    <p className="text-[10px] uppercase tracking-[0.4em] font-bold text-stone-300">Selecciona SKUs para empezar</p>
+                    <p className="font-serif italic text-2xl text-zinc-700">Selecciona cliente y carga SKUs</p>
                   </div>
                 </div>
               </motion.div>
@@ -310,12 +473,10 @@ export default function App() {
                 <div className="print:hidden flex justify-between items-center w-full max-w-[297mm] px-4">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-4 h-4 text-brand-accent" />
-                    <span className="text-[10px] uppercase tracking-widest font-black text-stone-500">{printQueue.length} ETIQUETAS GENERADAS</span>
+                    <span className="text-[10px] uppercase tracking-widest font-black text-zinc-500">{printQueue.length} ETIQUETAS {activeClient.name.toUpperCase()}</span>
                   </div>
-                  <div className="flex gap-6 font-mono text-[9px] text-stone-400">
+                  <div className="flex gap-6 font-mono text-[9px] text-zinc-700">
                     <span>A4 LANDSCAPE</span>
-                    <span>300 DPI OPTIMIZED</span>
-                    <span>COLOR: CMYK SAFE</span>
                   </div>
                 </div>
                 <div className="space-y-12 print:space-y-0">
@@ -324,8 +485,10 @@ export default function App() {
                       key={`${item.sku}-${idx}`}
                       sku={item.sku}
                       description={item.description}
-                      leftLogo={leftLogo || undefined}
-                      rightLogo={rightLogo || undefined}
+                      boxes={item.boxes}
+                      leftLogo={activeClient.leftLogo || undefined}
+                      rightLogo={activeClient.rightLogo || undefined}
+                      clientName={activeClient.name}
                     />
                   ))}
                 </div>
@@ -376,12 +539,12 @@ function NavItem({ icon, active, onClick, label }: any) {
       onClick={onClick}
       className={cn(
         "flex flex-col items-center gap-1.5 transition-all group",
-        active ? "text-brand-accent scale-110" : "text-stone-600 hover:text-stone-400"
+        active ? "text-brand-accent scale-110" : "text-zinc-700 hover:text-zinc-500"
       )}
     >
       <div className={cn(
         "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
-        active ? "bg-indigo-500/10" : ""
+        active ? "bg-brand-accent/10" : ""
       )}>
         {React.cloneElement(icon, { className: "w-5 h-5" })}
       </div>
@@ -392,13 +555,13 @@ function NavItem({ icon, active, onClick, label }: any) {
 
 function LogoUploader({ side, logo, onUpload }: any) {
   return (
-    <div className="group relative border border-stone-200 p-5 transition-all hover:border-brand-primary/40 bg-stone-50/30">
+    <div className="group relative border border-zinc-800 p-5 transition-all hover:border-brand-primary bg-zinc-950">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[10px] uppercase font-black text-stone-500 tracking-widest">Logo {side === 'left' ? 'Izquierdo' : 'Derecho'}</span>
-        {logo && <CheckCircle2 className="w-3 h-3 text-green-500" />}
+        <span className="text-[10px] uppercase font-black text-zinc-500 tracking-widest">Logo {side === 'left' ? 'Izquierdo' : 'Derecho'}</span>
+        {logo && <CheckCircle2 className="w-3 h-3 text-brand-accent" />}
       </div>
-      <div className="h-16 flex items-center justify-center bg-white border border-stone-100 grayscale hover:grayscale-0 transition-all cursor-pointer overflow-hidden p-2">
-        {logo ? <img src={logo} className="max-h-full max-w-full object-contain" /> : <Download className="w-4 h-4 text-stone-300" />}
+      <div className="h-16 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all cursor-pointer overflow-hidden p-2 relative">
+        {logo ? <img src={logo} className="max-h-full max-w-full object-contain" /> : <Plus className="w-4 h-4 text-zinc-700" />}
         <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => onUpload(side, e)} />
       </div>
     </div>
