@@ -82,7 +82,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
                <div className="h-[1px] w-8 bg-black/30" />
             </div>
             <h1 
-              className="font-arial-black font-black tracking-[-0.05em] text-black leading-[1] uppercase flex items-center justify-center text-center whitespace-nowrap text-[10rem]"
+              className="font-arial-black font-black tracking-[-0.05em] text-black leading-[1] uppercase flex items-center justify-center text-center whitespace-nowrap text-[12rem]"
             >
               {sku}
             </h1>
