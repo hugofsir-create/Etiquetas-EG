@@ -14,7 +14,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Settings,
-  Plus
+  Plus,
+  PlusSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './lib/utils';
@@ -23,6 +24,8 @@ interface LabelData {
   sku: string;
   description: string;
   boxes?: string | number;
+  totalQuantity?: number;
+  palletCount?: number;
 }
 
 interface MaterialInfo {
@@ -134,20 +137,84 @@ export default function App() {
   };
 
   const addToQueue = (skusInput: string) => {
-    const lines = skusInput.split(/[\n,;]/).map(s => s.trim().toUpperCase()).filter(s => s.length > 0);
-    const newItems: LabelData[] = lines.map(sku => {
+    const lines = skusInput.split('\n').filter(line => line.trim() !== '');
+    const newItems: LabelData[] = [];
+    
+    lines.forEach(line => {
+      const parts = line.trim().split(/\s+/);
+      const sku = parts[0].toUpperCase();
+      const qtyStr = parts[1];
+      const totalQty = qtyStr ? parseInt(qtyStr, 10) : 0;
+      
       const info = activeClient.materialMaster[sku];
-      return {
-        sku,
-        description: info?.description || 'SKU NO ENCONTRADO EN MAESTRO',
-        boxes: info?.boxes
-      };
+      if (info) {
+        const boxesPerPallet = info.boxes ? Number(info.boxes) : 1;
+        // If total quantity is provided, calculate pallets. Otherwise assume 1.
+        const palletsNeeded = totalQty > 0 ? Math.ceil(totalQty / boxesPerPallet) : 1;
+        
+        for (let i = 0; i < palletsNeeded; i++) {
+          newItems.push({
+            sku,
+            description: info.description,
+            boxes: info.boxes,
+            totalQuantity: totalQty,
+            palletCount: palletsNeeded
+          });
+        }
+      } else {
+        newItems.push({
+          sku,
+          description: 'SKU NO ENCONTRADO EN MAESTRO',
+          boxes: undefined
+        });
+      }
     });
+    
     setPrintQueue([...printQueue, ...newItems]);
     setSkuInput('');
   };
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    if (printQueue.length === 0) {
+      alert('La cola de impresión está vacía. Añade SKUs primero con su cantidad.');
+      return;
+    }
+    
+    // Switch to print tab always to ensure elements are mounted for the browser
+    setSelectedTab('print');
+    
+    // Use a longer delay and ensure we target the next tick
+    setTimeout(() => {
+      window.print();
+    }, 800);
+  };
+
+  const processAndAddToQueue = (data: LabelData[]) => {
+    const newItems: LabelData[] = [];
+    
+    data.forEach(item => {
+      const sku = item.sku.toUpperCase();
+      const info = activeClient.materialMaster[sku] || { description: item.description, boxes: item.boxes };
+      
+      const boxesPerPallet = info.boxes ? Number(info.boxes) : 1;
+      const totalQty = item.quantity || 0;
+      
+      // Calculate pallets if quantity is provided, otherwise just add 1
+      const palletsNeeded = totalQty > 0 ? Math.ceil(totalQty / boxesPerPallet) : 1;
+      
+      for (let i = 0; i < palletsNeeded; i++) {
+        newItems.push({
+          sku,
+          description: info.description || item.description,
+          boxes: info.boxes || item.boxes,
+          totalQuantity: totalQty,
+          palletCount: palletsNeeded
+        });
+      }
+    });
+
+    setPrintQueue(prev => [...prev, ...newItems]);
+  };
 
   return (
     <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 font-sans overflow-hidden selection:bg-brand-primary selection:text-white">
@@ -256,7 +323,11 @@ export default function App() {
                   <div className="space-y-3">
                     <button 
                       onClick={() => {
-                        const allLabels = Object.entries(activeClient.materialMaster).map(([sku, description]) => ({ sku, description }));
+                        const allLabels = Object.entries(activeClient.materialMaster).map(([sku, info]: [string, any]) => ({ 
+                          sku, 
+                          description: info.description, 
+                          boxes: info.boxes 
+                        }));
                         setPrintQueue([...printQueue, ...allLabels]);
                         setSelectedTab('print');
                       }}
@@ -275,7 +346,7 @@ export default function App() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-800">
-                          {Object.entries(activeClient.materialMaster).slice(0, 50).map(([sku, info]) => (
+                          {Object.entries(activeClient.materialMaster).slice(0, 50).map(([sku, info]: [string, any]) => (
                             <tr key={sku} className="hover:bg-zinc-800/50 transition-colors group">
                               <td className="p-2">
                                 <div className="flex flex-col">
@@ -308,40 +379,51 @@ export default function App() {
                   <p className="text-[10px] text-zinc-500 font-medium">Carga masiva por SKU</p>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-zinc-500">Pegar lista de SKUs</label>
-                    <textarea 
-                      value={skuInput}
-                      onChange={(e) => setSkuInput(e.target.value)}
-                      placeholder="SKU-100&#10;SKU-202"
-                      className="w-full h-40 bg-zinc-950 border border-zinc-800 p-4 font-mono text-xs text-brand-accent focus:border-brand-primary outline-none transition-all placeholder:text-zinc-800"
-                    />
+                <div className="bg-zinc-900 border border-zinc-700/50 p-6 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <PlusSquare className="w-5 h-5 text-brand-primary" />
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-100">Carga por Cantidad</h3>
                   </div>
-                  
-                  <button 
-                    onClick={() => addToQueue(skuInput)}
-                    disabled={skuInput.length === 0}
-                    className="w-full py-4 bg-brand-primary text-black text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-10 flex items-center justify-center gap-2"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Añadir a Fila
-                  </button>
-                  
-                  <div className="pt-4 border-t border-zinc-800 flex flex-col gap-3">
-                    <label className="text-[9px] uppercase tracking-widest font-bold text-zinc-500">O importar archivo</label>
+                  <textarea 
+                    value={skuInput}
+                    onChange={(e) => setSkuInput(e.target.value)}
+                    placeholder="Escribe SKU y Cantidad Total&#10;Ejemplo:&#10;80001 300&#10;80002 120"
+                    className="w-full bg-zinc-950 border border-zinc-800 p-4 text-xs font-mono text-zinc-300 rounded-xl h-40 focus:border-brand-primary/50 outline-none transition-all placeholder:text-zinc-700"
+                  />
+                  <div className="flex flex-col gap-2">
+                    <button 
+                      onClick={() => addToQueue(skuInput)}
+                      className="w-full py-4 bg-brand-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-black transition-all rounded-xl shadow-lg border border-brand-primary/20"
+                    >
+                      Añadir a Fila de Impresión
+                    </button>
+                    <div className="py-2 flex items-center gap-4">
+                      <div className="h-[1px] flex-1 bg-zinc-800" />
+                      <span className="text-[8px] font-black text-zinc-700 uppercase tracking-widest">O IMPORTAR ARCHIVO</span>
+                      <div className="h-[1px] flex-1 bg-zinc-800" />
+                    </div>
                     <ExcelImporter 
-                      onDataLoaded={(data) => setPrintQueue([...printQueue, ...data])}
+                      onDataLoaded={(data) => processAndAddToQueue(data)}
                       title="Importar Pedido"
-                      description="Solo SKUs deseados."
-                      className="bg-zinc-800 border-zinc-700"
+                      description="Carga SKUs y cantidades (Excel/CSV)"
+                      className="bg-zinc-800/30 border-zinc-700/20"
                     />
+                    <p className="text-[9px] text-zinc-600 text-center italic">Calcularemos el total de etiquetas según las cajas por pallet del maestro.</p>
                   </div>
                 </div>
 
                 {printQueue.length > 0 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-2">
+                      <button 
+                        onClick={handlePrint}
+                        className="w-full py-5 bg-brand-accent text-zinc-950 text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-white transition-all flex items-center justify-center gap-3 shadow-xl shadow-brand-accent/20"
+                      >
+                        <Printer className="w-5 h-5" />
+                        Imprimir Cola Completa
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between pt-4">
                       <h3 className="text-[9px] uppercase tracking-widest font-black text-zinc-600">Contenido de la Fila</h3>
                       <button onClick={() => setPrintQueue([])} className="text-[8px] text-red-500 font-bold uppercase hover:underline">Limpiar Todo</button>
                     </div>
@@ -388,6 +470,21 @@ export default function App() {
 
         {/* Main Stage */}
         <main className="flex-1 bg-zinc-950 relative overflow-y-auto p-12 flex flex-col items-center print:p-0 print:bg-white selection:bg-brand-primary/20">
+          {/* Permanent Print Container (Always in DOM for window.print()) */}
+          <div className="hidden print:block w-full">
+            {printQueue.map((item, idx) => (
+              <PalletLabel 
+                key={`print-${item.sku}-${idx}`}
+                sku={item.sku}
+                description={item.description}
+                boxes={item.boxes}
+                leftLogo={activeClient.leftLogo || undefined}
+                rightLogo={activeClient.rightLogo || undefined}
+                clientName={activeClient.name}
+              />
+            ))}
+          </div>
+
           <AnimatePresence mode="wait">
             {selectedTab === 'master' ? (
               <motion.div key="master-grid" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="w-full max-w-6xl">
@@ -422,7 +519,7 @@ export default function App() {
                           </td>
                         </tr>
                       ) : (
-                        Object.entries(activeClient.materialMaster).map(([sku, info]) => (
+                        Object.entries(activeClient.materialMaster).map(([sku, info]: [string, any]) => (
                           <tr key={sku} className="hover:bg-zinc-800/40 transition-colors group">
                             <td className="p-5 font-mono text-sm font-bold text-brand-accent uppercase tracking-tight">{sku}</td>
                             <td className="p-5 text-sm font-bold text-zinc-300 uppercase tracking-tight leading-relaxed">{info.description}</td>
@@ -469,20 +566,20 @@ export default function App() {
                 </div>
               </motion.div>
             ) : (
-              <motion.div key="stage" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-12 print:gap-0">
-                <div className="print:hidden flex justify-between items-center w-full max-w-[297mm] px-4">
+              <motion.div key="stage" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-12 print:hidden">
+                <div className="flex justify-between items-center w-full max-w-[297mm] px-4">
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-4 h-4 text-brand-accent" />
                     <span className="text-[10px] uppercase tracking-widest font-black text-zinc-500">{printQueue.length} ETIQUETAS {activeClient.name.toUpperCase()}</span>
                   </div>
                   <div className="flex gap-6 font-mono text-[9px] text-zinc-700">
-                    <span>A4 LANDSCAPE</span>
+                    <span>VISTA PREVIA DE IMPRESIÓN</span>
                   </div>
                 </div>
-                <div className="space-y-12 print:space-y-0">
+                <div className="space-y-12">
                   {printQueue.map((item, idx) => (
                     <PalletLabel 
-                      key={`${item.sku}-${idx}`}
+                      key={`preview-${item.sku}-${idx}`}
                       sku={item.sku}
                       description={item.description}
                       boxes={item.boxes}
@@ -491,6 +588,16 @@ export default function App() {
                       clientName={activeClient.name}
                     />
                   ))}
+                  
+                  <div className="flex justify-center pb-20">
+                     <button 
+                       onClick={handlePrint}
+                       className="px-16 py-8 bg-brand-accent text-zinc-950 font-black uppercase tracking-[0.3em] rounded-3xl shadow-2xl hover:scale-105 transition-all flex items-center gap-6"
+                     >
+                       <Printer size={32} />
+                       <span className="text-2xl">Confirmar e Imprimir {printQueue.length} Etiquetas</span>
+                     </button>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -500,12 +607,17 @@ export default function App() {
 
       <style>{`
         @media print {
-          @page { size: A4 landscape; margin: 0; }
+          @page { 
+            size: A4 landscape; 
+            margin: 0; 
+          }
           html, body, #root, [class*="h-screen"], [class*="overflow-hidden"] { 
             height: auto !important; 
             overflow: visible !important; 
             margin: 0 !important; 
             padding: 0 !important; 
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           main { 
             padding: 0 !important; 
@@ -524,9 +636,20 @@ export default function App() {
             page-break-after: always !important; 
             break-after: page !important;
             box-shadow: none !important; 
-            display: flex !important; 
+            display: flex !important;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
           }
-          header, nav, aside, .print:hidden { display: none !important; }
+          header, nav, aside, .print\\:hidden { 
+            display: none !important; 
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+          }
         }
       `}</style>
     </div>
