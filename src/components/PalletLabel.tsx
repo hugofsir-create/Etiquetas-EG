@@ -6,6 +6,7 @@ interface PalletLabelProps {
   sku: string;
   description: string;
   boxes?: string | number;
+  receivedDate?: string;
   clientName?: string;
   leftLogo?: string;
   rightLogo?: string;
@@ -16,6 +17,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
   sku,
   description,
   boxes,
+  receivedDate,
   clientName = "Escorihuela Gascon",
   leftLogo,
   rightLogo,
@@ -162,6 +164,14 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
              <span className="text-[10px] font-black text-black uppercase tracking-[0.3em]">
                Lote: {new Date().getTime().toString().slice(-6)}
              </span>
+             {receivedDate && (
+               <>
+                 <div className="h-4 w-[1px] bg-black/20" />
+                 <span className="text-[10px] font-black text-black uppercase tracking-[0.3em]">
+                   Recibido: {receivedDate}
+                 </span>
+               </>
+             )}
           </div>
         </div>
       </div>

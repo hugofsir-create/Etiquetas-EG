@@ -8,6 +8,7 @@ interface LabelData {
   description: string;
   boxes?: string | number;
   quantity?: number;
+  receivedDate?: string;
 }
 
 interface ExcelImporterProps {
@@ -48,11 +49,14 @@ export const ExcelImporter: React.FC<ExcelImporterProps> = ({
           const boxesKey = keys.find(k => k.toLowerCase().includes('caja') || k.toLowerCase().includes('pallet') || k.toLowerCase().includes('box'));
           const qtyKey = keys.find(k => k.toLowerCase().includes('cant') || k.toLowerCase().includes('total') || k.toLowerCase().includes('stock'));
           
+          const dateKey = keys.find(k => k.toLowerCase().includes('fecha') || k.toLowerCase().includes('date') || k.toLowerCase().includes('recibido'));
+          
           return {
             sku: skuKey ? String(row[skuKey]).trim() : 'N/A',
             description: descKey ? String(row[descKey]).trim() : 'SIN DESCRIPCIÓN',
             boxes: boxesKey ? row[boxesKey] : undefined,
             quantity: qtyKey ? Number(row[qtyKey]) : undefined,
+            receivedDate: dateKey ? String(row[dateKey]).trim() : undefined,
           };
         });
 

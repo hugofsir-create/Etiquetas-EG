@@ -27,6 +27,7 @@ interface LabelData {
   quantity?: number;
   totalQuantity?: number;
   palletCount?: number;
+  receivedDate?: string;
 }
 
 interface MaterialInfo {
@@ -97,6 +98,10 @@ export default function App() {
   const [printQueue, setPrintQueue] = useState<LabelData[]>([]);
   const [selectedTab, setSelectedTab] = useState<'master' | 'print' | 'config'>('master');
   const [skuInput, setSkuInput] = useState('');
+  const [receivedDate, setReceivedDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
 
   // Persistence
   useEffect(() => {
@@ -159,14 +164,16 @@ export default function App() {
             description: info.description,
             boxes: info.boxes,
             totalQuantity: totalQty,
-            palletCount: palletsNeeded
+            palletCount: palletsNeeded,
+            receivedDate: receivedDate // Use the current state value
           });
         }
       } else {
         newItems.push({
           sku,
           description: 'SKU NO ENCONTRADO EN MAESTRO',
-          boxes: undefined
+          boxes: undefined,
+          receivedDate: receivedDate
         });
       }
     });
@@ -209,7 +216,8 @@ export default function App() {
           description: info.description || item.description,
           boxes: info.boxes || item.boxes,
           totalQuantity: totalQty,
-          palletCount: palletsNeeded
+          palletCount: palletsNeeded,
+          receivedDate: item.receivedDate || receivedDate // Use item date if exists, else global
         });
       }
     });
@@ -382,6 +390,20 @@ export default function App() {
 
                 <div className="bg-zinc-900 border border-zinc-700/50 p-6 rounded-2xl space-y-4">
                   <div className="flex items-center gap-3 mb-2">
+                    <Database className="w-5 h-5 text-brand-primary" />
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-100">Fecha de Recepción</h3>
+                  </div>
+                  <input 
+                    type="date"
+                    value={receivedDate}
+                    onChange={(e) => setReceivedDate(e.target.value)}
+                    className="w-full bg-zinc-950 border border-zinc-800 p-4 text-xs font-mono text-zinc-300 rounded-xl focus:border-brand-primary/50 outline-none transition-all color-scheme-dark"
+                    style={{ colorScheme: 'dark' }}
+                  />
+                </div>
+
+                <div className="bg-zinc-900 border border-zinc-700/50 p-6 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
                     <PlusSquare className="w-5 h-5 text-brand-primary" />
                     <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-100">Carga por Cantidad</h3>
                   </div>
@@ -479,6 +501,7 @@ export default function App() {
                 sku={item.sku}
                 description={item.description}
                 boxes={item.boxes}
+                receivedDate={item.receivedDate}
                 leftLogo={activeClient.leftLogo || undefined}
                 rightLogo={activeClient.rightLogo || undefined}
                 clientName={activeClient.name}
@@ -584,6 +607,7 @@ export default function App() {
                       sku={item.sku}
                       description={item.description}
                       boxes={item.boxes}
+                      receivedDate={item.receivedDate}
                       leftLogo={activeClient.leftLogo || undefined}
                       rightLogo={activeClient.rightLogo || undefined}
                       clientName={activeClient.name}
