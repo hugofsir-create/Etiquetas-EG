@@ -84,7 +84,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
             <h1 
               className={cn(
                 "font-arial-black font-black tracking-[-0.05em] text-black leading-[0.9] uppercase flex items-center justify-center text-center w-full whitespace-nowrap",
-                sku.length > 15 ? "text-[4rem]" : sku.length > 12 ? "text-[5.5rem]" : sku.length > 8 ? "text-[7rem]" : "text-[9rem]"
+                sku.length > 15 ? "text-[5rem]" : sku.length > 12 ? "text-[7rem]" : sku.length > 8 ? "text-[9rem]" : "text-[11.5rem]"
               )}
             >
               {sku}

@@ -228,7 +228,7 @@ export default function App() {
             </div>
             <div className="flex flex-col">
               <h1 className="text-white font-black tracking-tight text-lg leading-none">
-                Label <span className="text-brand-accent">Hub</span>
+                LabelHub
               </h1>
               <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-zinc-500 mt-1">CLIENTE: {activeClient.name}</span>
             </div>
@@ -631,7 +631,7 @@ export default function App() {
           }
           .label-container { 
             width: 297mm !important; 
-            height: 209mm !important; 
+            height: 210mm !important; 
             margin: 0 !important; 
             padding: 10mm 15mm !important;
             border: none !important; 
