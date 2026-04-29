@@ -44,27 +44,27 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
       </div>
 
       {/* Header with Brand Name Only */}
-      <div className="w-full pt-8 text-center z-10 flex flex-col items-center justify-center">
+      <div className="w-full pt-6 text-center z-10 flex flex-col items-center justify-center">
         <div className="flex items-center justify-center gap-6 mb-2">
-          <div className="h-[2px] w-24 bg-black" />
-          <Grape className="w-12 h-12 text-black" />
-          <span className="text-6xl font-belluccia text-stone-900 px-4 transition-all">
+          <div className="h-[1.5mm] w-20 bg-black" />
+          <Grape className="w-10 h-10 text-black" />
+          <span className="text-6xl font-belluccia text-stone-900 px-6 tracking-tight">
             {clientName}
           </span>
-          <Grape className="w-12 h-12 text-black" />
-          <div className="h-[2px] w-24 bg-black" />
+          <Grape className="w-10 h-10 text-black" />
+          <div className="h-[1.5mm] w-20 bg-black" />
         </div>
-        <div className="h-[1px] w-[600px] bg-black/10 mt-4" />
-        <span className="text-[12px] uppercase tracking-[0.5em] text-black font-black block mt-4 bg-white px-8 relative z-10">
+        <div className="h-[0.5mm] w-[500px] bg-black/10 mt-3" />
+        <span className="text-[11px] uppercase tracking-[0.5em] text-black font-black block mt-3 bg-white px-8 relative z-10">
           SISTEMA DE GESTIÓN VINÍCOLA Y LOGÍSTICA DE PRECISIÓN
         </span>
       </div>
 
       {/* Main Content Area with Side Logos */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center w-full px-[50mm] border-y-[4px] border-black/5 z-10 py-8 my-4 relative">
-        <div className="flex items-center justify-center w-full gap-8 relative">
+      <div className="flex-1 flex flex-col justify-center items-center text-center w-full px-12 border-y-[4px] border-black/5 z-10 py-4 my-2 relative">
+        <div className="flex items-center justify-between w-full h-full gap-8">
           {/* Left Logo Container */}
-          <div className="absolute left-[-40mm] top-1/2 -translate-y-1/2 w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
+          <div className="w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
             {leftLogo ? (
               <img src={leftLogo} alt="Left Logo" className="max-w-full max-h-full object-contain" />
             ) : (
@@ -75,19 +75,23 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
 
           {/* Center SKU */}
-          <div className="flex flex-col items-center justify-center min-w-0 px-4">
+          <div className="flex-1 flex flex-col items-center justify-center min-w-0">
             <div className="flex items-center gap-4 mb-2">
                <div className="h-[1px] w-8 bg-black/30" />
                <span className="text-sm uppercase tracking-[0.5em] text-black font-black italic">ID ARTÍCULO SKU</span>
                <div className="h-[1px] w-8 bg-black/30" />
             </div>
+            {/* Dynamic SKU sizing to prevent overflow - No truncate as per user request */}
             <h1 
-              className="font-arial-black font-black tracking-[-0.05em] text-black leading-[1] uppercase flex items-center justify-center text-center whitespace-nowrap text-[12rem]"
+              className={cn(
+                "font-arial-black font-black tracking-[-0.05em] text-black leading-[0.9] uppercase flex items-center justify-center text-center w-full whitespace-nowrap",
+                sku.length > 15 ? "text-[6rem]" : sku.length > 12 ? "text-[8rem]" : sku.length > 8 ? "text-[10rem]" : "text-[12rem]"
+              )}
             >
               {sku}
             </h1>
             {boxes && (
-              <div className="mt-8 px-12 py-4 bg-black text-white rounded-xl flex items-center gap-8">
+              <div className="mt-6 px-12 py-4 bg-black text-white rounded-xl flex items-center gap-8">
                  <Package className="w-12 h-12 text-brand-accent" />
                  <div className="flex flex-col items-start leading-none">
                    <span className="text-5xl font-arial-black font-black tracking-[0.1em]">{boxes}</span>
@@ -98,7 +102,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
 
           {/* Right Logo Container */}
-          <div className="absolute right-[-40mm] top-1/2 -translate-y-1/2 w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
+          <div className="w-48 h-48 border-2 border-black flex items-center justify-center p-4 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] shrink-0">
             {rightLogo ? (
               <img src={rightLogo} alt="Right Logo" className="max-w-full max-h-full object-contain" />
             ) : (
@@ -109,50 +113,57 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
         </div>
         
-        <div className="mt-8 w-full max-w-6xl">
+        <div className="mt-6 w-full max-w-6xl">
           {/* Robust Triple Divider */}
-          <div className="flex flex-col gap-1.5 mb-6">
-            <div className="h-[6px] w-[80%] mx-auto bg-black" />
-            <div className="h-[2px] w-[80%] mx-auto bg-black/40" />
+          <div className="flex flex-col gap-1 mb-4">
+            <div className="h-[4px] w-[90%] mx-auto bg-black" />
+            <div className="h-[1px] w-[90%] mx-auto bg-black/40" />
           </div>
 
           <h2 
-            className="font-serif font-black text-black leading-[1.1] uppercase tracking-tight text-center break-words text-[4rem] px-12"
+            className={cn(
+              "font-serif font-black text-black leading-[1] uppercase tracking-tight text-center break-words px-8",
+              description.length > 40 ? "text-4xl" : "text-5xl"
+            )}
           >
             {description}
           </h2>
           
-          <div className="mt-8 flex items-center justify-center gap-8 px-12">
-            <div className="h-[3px] flex-1 bg-black" />
+          <div className="mt-6 flex items-center justify-center gap-8 px-12">
+            <div className="h-[2px] flex-1 bg-black" />
             <div className="flex flex-col items-center">
-              <span className="text-[11px] font-black text-black uppercase tracking-[0.4em]">ORIGEN: LUJÁN DE CUYO, MENDOZA</span>
+              <span className="text-[10px] font-black text-black uppercase tracking-[0.4em]">ORIGEN: LUJÁN DE CUYO, MENDOZA</span>
             </div>
-            <div className="h-[3px] flex-1 bg-black" />
+            <div className="h-[2px] flex-1 bg-black" />
           </div>
         </div>
       </div>
 
       {/* Barcode Footer Section */}
-      <div className="flex flex-col justify-end items-center w-full pb-16 space-y-6 z-10 relative">
+      <div className="flex flex-col justify-end items-center w-full pb-12 space-y-6 z-10 relative">
         {/* Quality Seal Accent */}
-        <div className="absolute right-32 bottom-20 w-32 h-32 border-2 border-black/10 rounded-full flex items-center justify-center text-center opacity-40 rotate-12">
+        <div className="absolute right-24 bottom-16 w-32 h-32 border-2 border-black/10 rounded-full flex items-center justify-center text-center opacity-40 rotate-12">
           <div className="text-[8px] font-black uppercase text-black">
             CONTROL DE ACCESO<br />Y CALIDAD<br />VERIFICADO
           </div>
         </div>
 
-        <div className="scale-[2.4] transform origin-bottom grayscale mb-4">
+        <div className="scale-[1.8] transform origin-bottom grayscale mb-2 overflow-visible">
           <Barcode 
             value={sku} 
-            width={2}
+            width={1.6}
             height={40}
             fontSize={0}
             background="transparent"
             displayValue={false}
+            margin={0}
           />
         </div>
         <div className="flex flex-col items-center">
-          <span className="font-mono text-2xl tracking-[1.4em] text-black font-black translate-x-[0.7em]">
+          <span className={cn(
+            "font-mono tracking-[0.8em] text-black font-black flex justify-center uppercase",
+            sku.length > 20 ? "text-[10px]" : sku.length > 15 ? "text-sm" : "text-xl"
+          )} style={{ paddingLeft: '0.8em' }}>
             {sku}
           </span>
           <div className="flex items-center gap-10 mt-6 pt-4 border-t border-black/10">
