@@ -24,7 +24,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
   return (
     <div 
       className={cn(
-        "label-container relative bg-white flex flex-col justify-between overflow-hidden",
+        "label-container relative bg-white flex flex-col justify-between overflow-hidden print:overflow-visible",
         "w-[297mm] h-[210mm] border border-stone-200 shadow-2xl mx-auto mb-12",
         "print:border-[1.5mm] print:border-black print:shadow-none print:m-0 print:rounded-none px-[10mm] py-[8mm]",
         className
@@ -74,7 +74,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
 
           {/* Center SKU */}
-          <div className="flex-1 flex flex-col items-center justify-center min-w-0">
+          <div className="flex-1 flex flex-col items-center justify-center min-w-0 px-6">
             <div className="flex items-center gap-4 mb-2">
                <div className="h-[1px] w-8 bg-black/30" />
                <span className="text-sm uppercase tracking-[0.5em] text-black font-black italic">ID ARTÍCULO SKU</span>
@@ -84,7 +84,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
             <h1 
               className={cn(
                 "font-arial-black font-black tracking-[-0.05em] text-black leading-[0.9] uppercase flex items-center justify-center text-center w-full whitespace-nowrap",
-                sku.length > 15 ? "text-[5rem]" : sku.length > 12 ? "text-[6.5rem]" : sku.length > 8 ? "text-[8.5rem]" : "text-[10rem]"
+                sku.length > 15 ? "text-[4rem]" : sku.length > 12 ? "text-[5.5rem]" : sku.length > 8 ? "text-[7rem]" : "text-[9rem]"
               )}
             >
               {sku}
@@ -139,7 +139,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
       </div>
 
       {/* Footer Section */}
-      <div className="flex flex-col justify-end items-center w-full pb-12 space-y-6 z-10 relative">
+      <div className="flex flex-col justify-end items-center w-full pb-10 space-y-6 z-10 relative">
         {/* Quality Seal Accent */}
         <div className="absolute right-24 bottom-16 w-32 h-32 border-2 border-black/10 rounded-full flex items-center justify-center text-center opacity-40 rotate-12">
           <div className="text-[8px] font-black uppercase text-black">

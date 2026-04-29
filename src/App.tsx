@@ -218,7 +218,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 font-sans overflow-hidden selection:bg-brand-primary selection:text-white">
+    <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 font-sans print:h-auto print:overflow-visible overflow-hidden selection:bg-brand-primary selection:text-white">
       {/* Header - Dark Sleek */}
       <header className="h-16 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-8 z-20 shrink-0 print:hidden shadow-xl">
         <div className="flex items-center gap-6">
@@ -470,7 +470,7 @@ export default function App() {
         </aside>
 
         {/* Main Stage */}
-        <main className="flex-1 bg-zinc-950 relative overflow-y-auto p-12 flex flex-col items-center print:p-0 print:bg-white selection:bg-brand-primary/20">
+        <main className="flex-1 bg-zinc-950 relative overflow-y-auto p-12 flex flex-col items-center print:p-0 print:bg-white print:h-auto print:overflow-visible selection:bg-brand-primary/20">
           {/* Permanent Print Container (Always in DOM for window.print()) */}
           <div className="hidden print:block w-full">
             {printQueue.map((item, idx) => (
@@ -612,19 +612,12 @@ export default function App() {
             size: A4 landscape; 
             margin: 0 !important; 
           }
-          html, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            height: auto !important;
-            width: auto !important;
-            overflow: visible !important;
-            background: white !important;
-          }
-          #root {
-            margin: 0 !important;
-            padding: 0 !important;
-            height: auto !important;
-            width: auto !important;
+          html, body, #root, [class*="h-screen"], [class*="overflow-hidden"], [class*="overflow-y-auto"] { 
+            height: auto !important; 
+            overflow: visible !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            display: block !important;
           }
           main { 
             padding: 0 !important; 
@@ -638,7 +631,7 @@ export default function App() {
           }
           .label-container { 
             width: 297mm !important; 
-            height: 209.5mm !important; 
+            height: 209mm !important; 
             margin: 0 !important; 
             padding: 10mm 15mm !important;
             border: none !important; 
