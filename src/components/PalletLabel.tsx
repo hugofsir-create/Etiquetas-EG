@@ -1,5 +1,4 @@
 import React from 'react';
-import Barcode from 'react-barcode';
 import { cn } from '../lib/utils';
 import { Grape, Package } from 'lucide-react';
 
@@ -81,11 +80,11 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
                <span className="text-sm uppercase tracking-[0.5em] text-black font-black italic">ID ARTÍCULO SKU</span>
                <div className="h-[1px] w-8 bg-black/30" />
             </div>
-            {/* Dynamic SKU sizing to prevent overflow - No truncate as per user request */}
+            {/* Dynamic SKU sizing to prevent overflow - Adjusted to not cover logos */}
             <h1 
               className={cn(
                 "font-arial-black font-black tracking-[-0.05em] text-black leading-[0.9] uppercase flex items-center justify-center text-center w-full whitespace-nowrap",
-                sku.length > 15 ? "text-[6rem]" : sku.length > 12 ? "text-[8rem]" : sku.length > 8 ? "text-[10rem]" : "text-[12rem]"
+                sku.length > 15 ? "text-[5rem]" : sku.length > 12 ? "text-[6.5rem]" : sku.length > 8 ? "text-[8.5rem]" : "text-[10rem]"
               )}
             >
               {sku}
@@ -139,7 +138,7 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
         </div>
       </div>
 
-      {/* Barcode Footer Section */}
+      {/* Footer Section */}
       <div className="flex flex-col justify-end items-center w-full pb-12 space-y-6 z-10 relative">
         {/* Quality Seal Accent */}
         <div className="absolute right-24 bottom-16 w-32 h-32 border-2 border-black/10 rounded-full flex items-center justify-center text-center opacity-40 rotate-12">
@@ -148,17 +147,6 @@ export const PalletLabel: React.FC<PalletLabelProps> = ({
           </div>
         </div>
 
-        <div className="scale-[1.8] transform origin-bottom grayscale mb-2 overflow-visible">
-          <Barcode 
-            value={sku} 
-            width={1.6}
-            height={40}
-            fontSize={0}
-            background="transparent"
-            displayValue={false}
-            margin={0}
-          />
-        </div>
         <div className="flex flex-col items-center">
           <span className={cn(
             "font-mono tracking-[0.8em] text-black font-black flex justify-center uppercase",

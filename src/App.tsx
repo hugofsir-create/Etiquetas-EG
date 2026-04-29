@@ -609,32 +609,36 @@ export default function App() {
       <style>{`
         @media print {
           @page { 
-            size: 297mm 210mm landscape; 
+            size: A4 landscape; 
             margin: 0 !important; 
           }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
-            width: 297mm !important;
-            height: 210mm !important;
+            height: auto !important;
+            width: auto !important;
             overflow: visible !important;
             background: white !important;
           }
           #root {
             margin: 0 !important;
             padding: 0 !important;
+            height: auto !important;
+            width: auto !important;
           }
           main { 
             padding: 0 !important; 
             margin: 0 !important; 
             background: white !important; 
             display: block !important; 
-            width: 297mm !important;
+            width: 100% !important;
             height: auto !important;
+            overflow: visible !important;
+            position: static !important;
           }
           .label-container { 
             width: 297mm !important; 
-            height: 210mm !important; 
+            height: 209.5mm !important; 
             margin: 0 !important; 
             padding: 10mm 15mm !important;
             border: none !important; 
