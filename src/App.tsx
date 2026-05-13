@@ -98,6 +98,9 @@ export default function App() {
   const [printQueue, setPrintQueue] = useState<LabelData[]>([]);
   const [selectedTab, setSelectedTab] = useState<'master' | 'print' | 'config'>('master');
   const [skuInput, setSkuInput] = useState('');
+  const [newMaterialSku, setNewMaterialSku] = useState('');
+  const [newMaterialDesc, setNewMaterialDesc] = useState('');
+  const [newMaterialBoxes, setNewMaterialBoxes] = useState('');
   const [receivedDate, setReceivedDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -140,6 +143,30 @@ export default function App() {
       };
     });
     updateActiveClient({ materialMaster: newMaster });
+  };
+
+  const handleManualAdd = () => {
+    if (!newMaterialSku || !newMaterialDesc) {
+      alert('SKU y Descripción son requeridos');
+      return;
+    }
+    const newMaster = { ...activeClient.materialMaster };
+    newMaster[newMaterialSku.trim().toUpperCase()] = {
+      description: newMaterialDesc.trim(),
+      boxes: newMaterialBoxes ? Number(newMaterialBoxes) : undefined
+    };
+    updateActiveClient({ materialMaster: newMaster });
+    setNewMaterialSku('');
+    setNewMaterialDesc('');
+    setNewMaterialBoxes('');
+  };
+
+  const deleteMaterial = (sku: string) => {
+    if (confirm(`¿Eliminar SKU ${sku} del maestro?`)) {
+      const newMaster = { ...activeClient.materialMaster };
+      delete newMaster[sku];
+      updateActiveClient({ materialMaster: newMaster });
+    }
   };
 
   const addToQueue = (skusInput: string) => {
@@ -317,6 +344,42 @@ export default function App() {
                   description="Carga tu base de datos (.xlsx)"
                   className="bg-zinc-800 border-zinc-700"
                 />
+
+                <div className="bg-zinc-900 border border-zinc-700/50 p-6 rounded-2xl space-y-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <PlusSquare className="w-5 h-5 text-brand-primary" />
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-100">Carga Manual</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <input 
+                      type="text"
+                      placeholder="SKU o Código"
+                      value={newMaterialSku}
+                      onChange={(e) => setNewMaterialSku(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 p-3 text-xs font-mono text-zinc-300 rounded-xl focus:border-brand-primary/50 outline-none transition-all placeholder:text-zinc-700 uppercase"
+                    />
+                    <input 
+                      type="text"
+                      placeholder="Descripción"
+                      value={newMaterialDesc}
+                      onChange={(e) => setNewMaterialDesc(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 p-3 text-xs font-sans text-zinc-300 rounded-xl focus:border-brand-primary/50 outline-none transition-all placeholder:text-zinc-700 uppercase"
+                    />
+                    <input 
+                      type="number"
+                      placeholder="Cajas por Pallet"
+                      value={newMaterialBoxes}
+                      onChange={(e) => setNewMaterialBoxes(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 p-3 text-xs font-mono text-zinc-300 rounded-xl focus:border-brand-primary/50 outline-none transition-all placeholder:text-zinc-700"
+                    />
+                    <button 
+                      onClick={handleManualAdd}
+                      className="w-full py-3 bg-zinc-800 border border-zinc-700 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-brand-primary transition-all rounded-xl"
+                    >
+                      Registrar en Maestro
+                    </button>
+                  </div>
+                </div>
 
                 <div className="bg-brand-primary/5 border border-brand-primary/20 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
@@ -551,6 +614,15 @@ export default function App() {
                                <span className="inline-block px-4 py-1.5 bg-zinc-950 border border-zinc-800 text-white rounded-full font-mono text-sm font-black shadow-inner">
                                  {info.boxes || '—'}
                                </span>
+                            </td>
+                            <td className="p-5 text-right">
+                              <button 
+                                onClick={() => deleteMaterial(sku)}
+                                className="p-2 text-zinc-700 hover:text-red-500 transition-colors"
+                                title="Eliminar del maestro"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </td>
                           </tr>
                         ))
